@@ -335,7 +335,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, async () => {
   console.log(`====================================================`);
-  console.log(`RedBus Studio Running on http://localhost:${PORT}`);
+  console.log(`RedBus Studio Running on http://ssms-svc:${PORT}`);
   console.log(`Bus Operators & Routes Engine: Ready!`);
   console.log(`2+1 Sleeper & 2+2 Seater Layouts: Ready!`);
   console.log(`Privacy Guard: Booked user details hidden for regular users`);
