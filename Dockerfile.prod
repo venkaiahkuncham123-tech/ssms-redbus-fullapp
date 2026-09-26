@@ -3,7 +3,6 @@ FROM ${BASE_IMAGE}
 ARG DIR=/app
 WORKDIR ${DIR}
 COPY node_modules .
-COPY app.js .
-COPY server.js .
+COPY package.json .
 EXPOSE 3000
 CMD [ "npm" , "start"]
