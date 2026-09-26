@@ -1,0 +1,9 @@
+ARG BASE_IMAGE=node:22-alpine
+FROM ${BASE_IMAGE}
+ARG DIR=/app
+WORKDIR ${DIR}
+COPY node_modules .
+COPY app.js .
+COPY server.js .
+EXPOSE 3000
+CMD [ "npm" , "start"]

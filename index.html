@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d84950">
+  <meta name="description" content="RedBus clone with 2+1 sleeper and 2+2 seater layouts, route & operator selection, privacy protection, and SQL Server integration.">
+  <title>RedBus · Bus Booking & Seat Selection (2+1 Sleeper)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23d84950'/%3E%3Ctext x='7' y='29' fill='white' font-size='27' font-family='Arial' font-weight='bold'%3Erb%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="./" aria-label="redBus home"><span class="brand-bus" aria-hidden="true">vm<span></span></span><span>Chotu<span class="brand-bold"></span><small>Travells All Over India</small></span></a>
+    <div class="workspace-label">EXPLORE & BOOK</div>
+    <nav aria-label="Main navigation">
+      <a href="#booking-section" class="nav-link active" data-nav="booking"><i data-icon="ticket"></i> Book Bus Ticket</a>
+      <a href="#gallery-section" class="nav-link" data-nav="gallery"><i data-icon="bus"></i> Bus Gallery</a>
+    </nav>
+    <div class="sidebar-tip">
+      <span class="tip-icon"><i data-icon="sparkles"></i></span>
+      <h3>Standard 2+1 Sleeper</h3>
+      <p>Single berths (Window, Solo) on left + Double berths on right. Windows +₹100, Single sleeper +₹150.</p>
+      <div class="tip-route"><span></span><b>· · · · · · · · ·</b><i data-icon="map-pin"></i></div>
+    </div>
+    <div class="sidebar-bottom" id="sidebar-storage-box">
+      <span id="storage-indicator"><span class="connection-dot"></span> SQL Server / SSMS</span>
+      <button class="icon-button" id="demo-info" aria-label="About this system"><i data-icon="info"></i></button>
+    </div>
+  </aside>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="breadcrumb">RedBus <span>/</span> <strong>Bus Routes & Seat Selection</strong></div>
+      <div class="header-right">
+        <span class="today" id="today"></span>
+      </div>
+    </header>
+
+    <main id="overview">
+      <div class="page-heading">
+        <div>
+          <div class="eyebrow"><span></span> INDIA'S NO. 1 BUS NETWORK</div>
+          <h1>Book Bus Tickets & Select Your Seats</h1>
+          <p>Browse available operators, select routes and travel dates, and pick seats on the standard 2+1 sleeper or 2+2 seater diagram.</p>
+        </div>
+        <span class="workspace-badge"><i data-icon="bus"></i> Live Fleet & Seat Sync</span>
+      </div>
+
+      <!-- BUS SELECTION & ROUTE HERO BANNER -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <span class="hero-tag">OPERATOR ROUTES & 2+1 SLEEPER SEATS</span>
+          <h2 id="hero-title">Travel Across India.<br><span>Choose Your Operator & Seat.</span></h2>
+          <p>VRL, SRS, Orange Travels, KPN, Zingbus and more. Choose single window berths (+₹150) or double berths with real-time seat availability.</p>
+          <a href="#booking-section" class="hero-link">Search & Select Seats <i data-icon="arrow-right"></i></a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 510 245" fill="none">
+            <circle cx="337" cy="106" r="92" fill="#F4D8B9"/>
+            <circle cx="337" cy="106" r="70" stroke="#FBEADE" stroke-width="1"/>
+            <path d="M18 193C106 160 128 239 240 211S400 156 507 196" stroke="#D7BBA4" stroke-dasharray="6 8"/>
+            <path d="M0 219C139 175 259 237 510 213" stroke="#E6CCB7"/>
+            <path d="M56 64H102M70 55H117M423 48H455M442 39H474" stroke="#FFF7EF" stroke-width="7" stroke-linecap="round"/>
+            <path d="M411 128V195M393 161L411 119L429 161H393ZM390 177L411 139L432 177H390Z" fill="#A3AE8A" stroke="#A3AE8A" stroke-width="3"/>
+            <path d="M84 145V206M68 179L84 141L100 179H68Z" fill="#B9BE98" stroke="#B9BE98" stroke-width="3"/>
+            <ellipse cx="257" cy="213" rx="149" ry="11" fill="#D9B9A2" opacity=".4"/>
+            <g transform="rotate(-4 255 155)">
+              <rect x="111" y="94" width="276" height="109" rx="18" fill="#BE3540"/>
+              <path d="M129 94H367C378 94 387 103 387 114V166H111V112C111 102 119 94 129 94Z" fill="#E35B60"/>
+              <path d="M117 169H387V189H117Z" fill="#CE424C"/>
+              <path d="M128 108H316V152H122V116C122 112 124 108 128 108Z" fill="#F8E8D7"/>
+              <path d="M330 108H364C371 108 376 114 376 121V152H330V108Z" fill="#434D55"/>
+              <path d="M339 111H362C369 111 372 116 372 123V145L339 111Z" fill="#647079"/>
+              <path d="M166 108V152M211 108V152M256 108V152M301 108V152" stroke="#D94F57" stroke-width="7"/>
+              <path d="M126 113L157 145M174 113L203 143M221 113L249 143M264 113L292 143" stroke="white" stroke-opacity=".5" stroke-width="6"/>
+              <rect x="327" y="161" width="35" height="39" rx="3" stroke="#A92C37" stroke-width="2"/>
+              <path d="M343 165V194" stroke="#A92C37" stroke-width="2"/>
+              <rect x="373" y="171" width="14" height="8" rx="3" fill="#FFE1A6"/>
+              <rect x="111" y="173" width="7" height="9" rx="2" fill="#F8B4A0"/>
+              <circle cx="161" cy="200" r="20" fill="#3D4148"/>
+              <circle cx="161" cy="200" r="10" fill="#B9B8B4"/>
+              <circle cx="161" cy="200" r="4" fill="#6D7073"/>
+              <circle cx="351" cy="200" r="20" fill="#3D4148"/>
+              <circle cx="351" cy="200" r="10" fill="#B9B8B4"/>
+              <circle cx="351" cy="200" r="4" fill="#6D7073"/>
+              <text x="218" y="186" fill="white" font-family="Arial,sans-serif" font-size="20" font-weight="bold">redBus</text>
+              <path d="M390 131H397V154H390" stroke="#A92C37" stroke-width="5" stroke-linecap="round"/>
+            </g>
+            <path d="M194 43C194 32 202 24 212 24S230 32 230 43C230 57 212 70 212 70S194 57 194 43Z" fill="#D84950"/>
+            <circle cx="212" cy="42" r="6" fill="#FFEFE4"/>
+            <path d="M211 73V85" stroke="#D84950" stroke-dasharray="3 3"/>
+            <path d="M146 55L149 63L158 66L149 69L146 77L143 69L135 66L143 63Z" fill="#D8AC7F"/>
+          </svg>
+          <span class="art-caption"><span></span> India's No. 1 Bus Network</span>
+        </div>
+      </section>
+
+      <!-- BOOKING & SEAT SELECTION PANEL -->
+      <div class="content-grid" id="booking-section">
+        <section class="panel registration-panel" id="registration">
+          <div class="panel-heading">
+            <span class="section-icon"><i data-icon="ticket"></i></span>
+            <div>
+              <h2 id="form-title">Select Route, Bus & Seats</h2>
+              <p id="form-subtitle">Choose bus operator, pick 2+1 sleeper or 2+2 seater seats, and confirm your ticket.</p>
+            </div>
+            <span class="step-label">Live 2+1 Layout</span>
+          </div>
+
+          <form id="traveler-form" novalidate>
+            <input type="hidden" id="traveler-id">
+            <input type="hidden" id="calculated-fare" value="0">
+            <input type="hidden" id="selected-seats-input" value="">
+
+            <!-- ROUTE & DATE SELECTION -->
+            <div class="form-intro">1. CHOOSE ROUTE & DATE <span>Distance determines base fare</span></div>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="from-city">From (Departure City) <span>*</span></label>
+                <div class="input-wrap">
+                  <i data-icon="map-pin"></i>
+                  <input id="from-city" name="fromCity" list="indian-cities" value="Bengaluru" placeholder="e.g. Bengaluru" required aria-describedby="fromCity-error">
+                </div>
+                <span class="field-error" id="fromCity-error"></span>
+              </div>
+
+              <div class="field">
+                <label for="to-city">To (Destination City) <span>*</span></label>
+                <div class="input-wrap">
+                  <i data-icon="map-pin"></i>
+                  <input id="to-city" name="toCity" list="indian-cities" value="Hyderabad" placeholder="e.g. Hyderabad" required aria-describedby="toCity-error">
+                </div>
+                <span class="field-error" id="toCity-error"></span>
+              </div>
+            </div>
+
+            <datalist id="indian-cities">
+              <option value="Bengaluru">
+              <option value="Hyderabad">
+              <option value="Mumbai">
+              <option value="Pune">
+              <option value="Chennai">
+              <option value="Delhi">
+              <option value="Goa">
+              <option value="Jaipur">
+              <option value="Kolkata">
+              <option value="Kochi">
+              <option value="Coimbatore">
+              <option value="Ahmedabad">
+              <option value="Chandigarh">
+            </datalist>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="travel-date">Date of Journey <span>*</span></label>
+                <div class="input-wrap">
+                  <i data-icon="calendar"></i>
+                  <input id="travel-date" name="travelDate" type="date" required aria-describedby="travelDate-error">
+                </div>
+                <span class="field-error" id="travelDate-error"></span>
+              </div>
+
+              <div class="field">
+                <label for="preference">Bus Class <span>*</span></label>
+                <select id="preference" name="preference">
+                  <option value="AC Sleeper">AC Sleeper 2+1 · Luxury Flat Bed</option>
+                  <option value="AC Seater">AC Seater 2+2 · Pushback AC</option>
+                  <option value="Non-AC Sleeper">Non-AC Sleeper 2+1 · Economy Sleeper</option>
+                  <option value="Non-AC Seater">Non-AC Seater 2+2 · Express Pushback</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- OPERATOR SELECTION -->
+            <div class="form-intro route-intro">2. SELECT BUS OPERATOR <span>Verified RedBus Partner Fleets</span></div>
+            <div class="user-bus-selector">
+              <div class="operator-card-list" id="operator-list-cards">
+                <!-- Dynamically rendered bus operator cards -->
+              </div>
+              <input type="hidden" id="selected-operator" value="VRL Travels">
+            </div>
+
+            <!-- PASSENGER DETAILS -->
+            <div class="form-intro">3. PASSENGER INFORMATION <span>Your details stay private</span></div>
+            <div class="field">
+              <label for="full-name">Full name <span>*</span></label>
+              <div class="input-wrap">
+                <i data-icon="user"></i>
+                <input id="full-name" name="name" autocomplete="name" maxlength="80" placeholder="e.g. Rahul Sharma" required aria-describedby="name-error">
+              </div>
+              <span class="field-error" id="name-error"></span>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="email">Email address <span>*</span></label>
+                <div class="input-wrap">
+                  <i data-icon="mail"></i>
+                  <input id="email" name="email" type="email" autocomplete="email" maxlength="120" placeholder="you@example.com" required aria-describedby="email-error">
+                </div>
+                <span class="field-error" id="email-error"></span>
+              </div>
+              <div class="field">
+                <label for="phone">Mobile number <span>*</span></label>
+                <div class="input-wrap phone-wrap">
+                  <span class="phone-prefix">+91 <span></span></span>
+                  <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="10-digit number" required aria-describedby="phone-error">
+                </div>
+                <span class="field-error" id="phone-error"></span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="gender">Gender <span class="optional">(optional)</span></label>
+              <select id="gender" name="gender">
+                <option value="">Select gender</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Non-binary</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+
+            <!-- INTERACTIVE SEAT SELECTION SECTION (2+1 SLEEPER / 2+2 SEATER) -->
+            <div class="form-intro seat-map-intro">
+              4. SELECT SEATS ON BUS DIAGRAM <span>Click empty seats to reserve</span>
+            </div>
+
+            <div class="seat-legend">
+              <span class="legend-item"><span class="legend-box available"></span> Empty / Available</span>
+              <span class="legend-item"><span class="legend-box selected"></span> Selected</span>
+              <span class="legend-item"><span class="legend-box booked"></span> Booked (Unavailable)</span>
+              <span class="legend-item window-tag"><span class="badge-mini">+₹100</span> Window Berth</span>
+              <span class="legend-item single-tag"><span class="badge-mini">+₹150</span> Single Sleeper (Solo)</span>
+            </div>
+
+            <div class="seat-container" id="seat-layout-container">
+              <!-- Dynamically rendered 2+1 Sleeper or 2+2 Seater layout -->
+            </div>
+            <span class="field-error" id="selectedSeats-error"></span>
+
+            <!-- DYNAMIC LIVE FARE CARD -->
+            <div class="fare-preview-card" id="fare-preview-box">
+              <div class="fare-header">
+                <div>
+                  <span class="fare-sub">DYNAMIC FARE ESTIMATE</span>
+                  <strong class="fare-total" id="fare-display-total">₹0</strong>
+                </div>
+                <span class="surge-badge" id="fare-surge-badge">Select route & seats</span>
+              </div>
+              <div class="fare-breakdown">
+                <div class="fare-row">
+                  <span>Selected Bus & Route:</span>
+                  <span id="fare-route-info">—</span>
+                </div>
+                <div class="fare-row">
+                  <span>Selected Seats:</span>
+                  <span id="fare-selected-seats-label" class="seats-selected-list">None selected</span>
+                </div>
+                <div class="fare-row">
+                  <span>Base Fare per Seat:</span>
+                  <span id="fare-base-seat-price">₹0</span>
+                </div>
+                <div class="fare-row" id="fare-premiums-row" hidden>
+                  <span>Seat Premiums (Window / Single):</span>
+                  <span id="fare-premiums-amount">+₹0</span>
+                </div>
+                <div class="fare-row">
+                  <span>GST (5% Road Transport):</span>
+                  <span id="fare-gst">₹0</span>
+                </div>
+              </div>
+            </div>
+
+            <label class="consent">
+              <input id="consent" type="checkbox" required aria-describedby="consent-error">
+              <span>I confirm passenger details and consent to store this booking in SQL Server (RedBusDB). <span class="required">*</span></span>
+            </label>
+            <span class="field-error" id="consent-error"></span>
+
+            <button class="button button-primary submit-button" type="submit">
+              <i data-icon="ticket"></i>
+              <span id="submit-label">Confirm Booking & Pay</span>
+              <i data-icon="arrow-right"></i>
+            </button>
+            <p class="form-footnote"><i data-icon="lock"></i> Your personal details stay private and are stored only inside SQL Server (RedBusDB).</p>
+          </form>
+        </section>
+
+        <!-- RIGHT PANEL: BUS GALLERY FOR THE SELECTED OPERATOR -->
+        <section class="panel gallery-panel" id="gallery-section" aria-labelledby="gallery-title">
+          <div class="panel-heading">
+            <div>
+              <h2 id="gallery-title">Bus Gallery <span class="count-pill" id="gallery-chip">VRL Travels</span></h2>
+              <p id="gallery-sub-text">Coach photos follow the operator you select in step 2.</p>
+            </div>
+          </div>
+
+          <div class="bus-hero">
+            <div class="bus-hero-media">
+              <img id="bus-hero-img" src="assets/buses/vrl-1.jpg" alt="VRL Travels AC Sleeper coach" decoding="async">
+              <span class="bus-hero-badge"><span class="connection-dot"></span> Live fleet photo</span>
+              <span class="bus-hero-counter" id="bus-photo-counter">1 / 2</span>
+            </div>
+            <div class="bus-hero-body">
+              <div class="bus-hero-title">
+                <strong id="bus-hero-operator">VRL Travels</strong>
+                <span class="bus-hero-rating" id="bus-hero-rating">4.8 ★</span>
+              </div>
+              <div class="bus-hero-meta" id="bus-hero-meta"></div>
+              <p class="bus-hero-caption" id="bus-hero-caption"></p>
+            </div>
+          </div>
+
+          <div class="bus-thumb-strip" id="bus-thumb-strip" role="group" aria-label="Coach photos of the selected operator"></div>
+
+          <h3 class="gallery-sub-title">Switch Operator Fleet</h3>
+          <div class="operator-photo-row" id="operator-photo-row"></div>
+
+          <div class="gallery-note">
+            <span class="note-art"><i data-icon="camera"></i></span>
+            <div>
+              <strong>Photos follow your operator</strong>
+              <p>Pick another operator in step 2 or from the row above - the coach photo, the fleet details and the 2+1 / 2+2 seat diagram update together.</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <footer class="page-footer">
+        <span>RedBus Clone with 2+1 Sleeper Layout, Operator Fares & SSMS Database.</span>
+        <span>Maintained By Vaishnav M <span>·</span> Not affiliated with redBus</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- INFO MODAL -->
+  <dialog id="info-dialog" aria-labelledby="info-title">
+    <div class="dialog-header">
+      <h2 id="info-title">RedBus 2+1 Sleeper & Privacy Architecture</h2>
+      <button class="icon-button" data-close="info-dialog" aria-label="Close info"><i data-icon="x"></i></button>
+    </div>
+    <p><strong>1. Standard 2+1 Sleeper Layout:</strong></p>
+    <ul>
+      <li><strong>Single Berths (Left):</strong> Solitary Window Berths with extra privacy. Carries a <strong>+₹150 premium</strong>.</li>
+      <li><strong>Double Berths (Right):</strong> Outer Window berths carry <strong>+₹100 premium</strong>; Inner Aisle berths are base fare.</li>
+      <li><strong>2 Decks:</strong> Lower Deck (L1 to L12) and Upper Deck (U1 to U12).</li>
+    </ul>
+    <p><strong>2. Passenger Privacy Protection:</strong></p>
+    <p>Ordinary passengers can pick empty seats and book their journeys without ever seeing another traveler's identity. Passenger names, phone numbers and emails stay inside SQL Server (<code>RedBusDB</code>) and are never exposed by the public app.</p>
+    <p><strong>3. SQL Server (SSMS):</strong></p>
+    <p>All records are stored in table <code>dbo.Travelers</code> on database <code>RedBusDB</code>.</p>
+    <div class="dialog-actions">
+      <button class="button button-primary" data-close="info-dialog">Got it</button>
+    </div>
+  </dialog>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast" role="status" hidden>
+    <i data-icon="check-circle"></i>
+    <span></span>
+    <button class="icon-button" id="dismiss-toast" aria-label="Dismiss notification"><i data-icon="x"></i></button>
+  </div>
+</body>
+</html>

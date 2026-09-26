@@ -1,0 +1,257 @@
+
+apiVersion: v1 
+kind: Secret 
+metadata: 
+  name: github-secret
+  namespace: redbus
+type: kubernetes.io/dockerconfigjson
+data: 
+  .dockerconfigjson: 
+---
+apiVersion: v1 
+kind: ConfigMap 
+metadata:
+  name: db-config
+  namespace: redbus
+data:
+  ACCEPT_EULA: "Y"
+  DB_NAME: "RedBusDB"
+  DB_HOST: "ssms-svc"
+  DB_PORT: "1433"
+---
+apiVersion: v1 
+kind: Secret 
+metadata:
+  name: db-secret
+  namespace: redbus
+data:
+  MSSQL_SA_PASSWORD: cmVkYnVzMTIz
+  ADMIN_PASS: cmVkYnVzMTIz
+  ADMIN_USER: YWRtaW4=
+type: Opaque
+---
+apiVersion: v1 
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  namespace: redbus
+spec:
+  storageClassName: gp3 
+  resources:
+    request:
+      storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+---
+apiVersion: apps/v1
+kind: StatfulSet
+metadata:
+  name: mssql-db
+  namespace: redbus
+spec::
+  replicas: 2
+  strategy: 
+    updateType: RollingUpdate 
+  serviceName: ssms-svc
+  selector:
+    matchLabels:
+      app: redbus
+  template:
+    metadata:
+      labels:
+        app: redbus
+    spec:
+      containers:
+        - image: mcr.microsoft.com/mssql/server:2022-latest
+          name: ssms
+          ports:
+            - contianerPort: 1433
+              name: ssms-port
+          readinessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          env:
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: MSSQL_SA_PASSWORD
+            - name: ACCEPT_EULA
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: ACCEPT_EULA
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_NAME
+          resources:
+            requests:
+              cpu: 300m
+              memory: 400Mi
+            limits:
+              cpu: 350m
+              memory: 450Mi
+          volumeMounts:
+            - name: pvc-volume
+              mountPath: /external-data
+      volumes:
+        - name: pvc-volume
+          persistenVolumeClaim:
+            name: db-pvc
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: ssms-svc
+  namespace: redbus
+spec:
+  clusterIP: None
+  selector:
+    app: redbus
+  ports:
+    - name: ssms
+      port: 1433
+      targetPort: ssms-port
+      protocol: TCP
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata:
+  name: redbus-deploy
+  namespace: redbus
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate 
+  selector:
+    matchLabels:
+      app: front-end
+  template:
+    metadata:
+      labels:
+        app: front-end
+    spec:
+      imagePullSecrets:
+        - name:  github-secret
+      containers:
+        - name: app
+          image: ghcr.io/venkaiahkuncham123/redbus:v1
+          ports:
+            - containerPort: 3000 
+          imagePullPolicy: Always 
+          restartPolicy: OnFailure
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: ADMIN_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: ADMIN_PASS
+          resources:
+            requests:
+              cpu: 200m
+              memory: 300Mi
+            limits:
+              cpu: 300m
+              memory: 400Mi
+          livenessProbe:
+            httpGet:
+              path: /travelers
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /travelers
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            failureThreshold: 3
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: app-svc
+  namespace: redbus
+spec:
+  type: NodePort
+  selector:
+    app: front-end
+  ports:
+    - name: app
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app-hpa
+  namespace: redbus
+spec:
+  minReplicas: 1
+  maxReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment 
+    name: redbus-deploy
+---
+appiVersion: v1 
+kind: ResourceQuota 
+metadata: 
+  namespace: redbus
+  name: redbus-quota
+spec:
+  hard: 
+    pods: 5
+    count/deployments.apps: 2
+    count/statefulsets.apps: 2
+    configmaps: 5
+    secrets: 5
+    services: 4
+    persistentvolumeclaims: 2
+    count/networkpolicies.networking.k8s.io: 1
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redbus-netpol
+  namespace: redbus
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: redbus
+        - podSelector:
+            matchLabels:
+              app: front-end
+
