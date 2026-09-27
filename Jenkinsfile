@@ -45,12 +45,12 @@ pipeline {
                 script {
                             sh 'docker build -t ghcr.io/venkaiahkuncham123/redbus:v1 -f Dockerfile.prod .'
                         }
-                }
+                
             }
         }
         stage('Trviy Image Scan') {
             steps {
-                script {
+                
                     sh 'trivy image --format table --output image.txt ghcr.io/venkaiahkuncham123/redbus:v1'
                         
                 }
