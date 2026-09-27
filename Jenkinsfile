@@ -34,7 +34,10 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                            sh 'docker build -t ghcr.io/venkaiahkuncham123/redbus:v1 -f Dockerfile.prod .'
+                    withDockerRegistry(credentialsId: 'git-token') {
+    sh 'docker build -t ghcr.io/venkaiahkuncham123/redbus:v1 -f Dockerfile.prod .'
+                                }
+                            
                         }
                 
             }
