@@ -1,17 +1,54 @@
-﻿import msnodesql from "msnodesqlv8";
+import sql from "mssql";
 
-export const CONNECTION_STRING = process.env.DB_CONNECTION_STRING ||
-  "Server=.\\SQLEXPRESS;Database=RedBusDB;Trusted_Connection=Yes;Driver={ODBC Driver 17 for SQL Server}";
+const DB_HOST = process.env.DB_HOST || "localhost";
+const DB_PORT = Number(process.env.DB_PORT || "1433");
+const DB_NAME = process.env.DB_NAME || "RedBusDB";
+const DB_USER = process.env.DB_USER || process.env.ADMIN_USER || "sa";
+const DB_PASSWORD = process.env.DB_PASSWORD || process.env.ADMIN_PASS || process.env.MSSQL_SA_PASSWORD || "redbus123";
+const DB_ENCRYPT = (process.env.DB_ENCRYPT || "false").toLowerCase() === "true";
+const DB_TRUST_CERT = (process.env.DB_TRUST_CERT || "true").toLowerCase() === "true";
+
+export const dbConfig = {
+  server: DB_HOST,
+  port: DB_PORT,
+  database: DB_NAME,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  options: {
+    encrypt: DB_ENCRYPT,
+    trustServerCertificate: DB_TRUST_CERT,
+    enableArithAbort: true
+  },
+  pool: { max: 10, min: 0, idleTimeoutMillis: 30000 },
+  connectionTimeout: 15000,
+  requestTimeout: 15000
+};
+
+let poolPromise = null;
+function getPool() {
+  if (!poolPromise) {
+    poolPromise = sql.connect(dbConfig).catch((err) => {
+      poolPromise = null;
+      throw err;
+    });
+  }
+  return poolPromise;
+}
 
 /**
- * Execute a parameterized query against SQL Server
+ * Execute a parameterized query against SQL Server.
+ * Keeps the old `?` placeholder style working.
  */
-export function querySql(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    msnodesql.query(CONNECTION_STRING, sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows || []);
+export function querySql(sqlText, params = []) {
+  let idx = -1;
+  const rewritten = sqlText.replace(/\?/g, () => `@p${++idx}`);
+  return getPool().then(async (pool) => {
+    const request = pool.request();
+    params.forEach((value, i) => {
+      request.input(`p${i}`, value === undefined ? null : value);
     });
+    const result = await request.query(rewritten);
+    return result.recordset || [];
   });
 }
 
@@ -55,22 +92,22 @@ function toTravelerModel(row) {
 }
 
 export async function getAllTravelers() {
-  const sql = `
+  const sqlText = `
     SELECT Id, Name, Email, Phone, City, FromCity, ToCity, BusOperator, BusNumber, TravelDate, Gender, Preference, SeatCount, SelectedSeats, TotalFare, Status, CreatedAt, UpdatedAt
     FROM Travelers
     ORDER BY CreatedAt DESC
   `;
-  const rows = await querySql(sql);
+  const rows = await querySql(sqlText);
   return rows.map(toTravelerModel);
 }
 
 export async function getTravelerById(id) {
-  const sql = `
+  const sqlText = `
     SELECT TOP 1 Id, Name, Email, Phone, City, FromCity, ToCity, BusOperator, BusNumber, TravelDate, Gender, Preference, SeatCount, SelectedSeats, TotalFare, Status, CreatedAt, UpdatedAt
     FROM Travelers
     WHERE Id = ?
   `;
-  const rows = await querySql(sql, [id]);
+  const rows = await querySql(sqlText, [id]);
   return rows.length > 0 ? toTravelerModel(rows[0]) : null;
 }
 
