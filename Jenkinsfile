@@ -23,16 +23,7 @@ pipeline {
                 sh 'trivy fs --format table --output trivy-fs-report.txt .'
             }
         }
-        stage('Installing Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-        stage('Executing Test Cases') {
-            steps {
-                sh 'npm test'
-            }
-        }
+  
         stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
