@@ -6,7 +6,7 @@ metadata:
   namespace: redbus
 type: kubernetes.io/dockerconfigjson
 data: 
-  .dockerconfigjson: 
+  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2doY3IuaW8iOnsidXNlcm5hbWUiOiJ2ZW5rYWlhaGt1bmNoYW0xMjMtdGVjaCIsInBhc3N3b3JkIjoiZ2hwXzQ1RGh6NlV3M0NBOGFBS25VSmpENzF5SnJqNm9BTDFiVE1VQSIsImF1dGgiOiJkbVZ1YTJGcFlXaHJkVzVqYUdGdE1USXpMWFJsWTJnNloyaHdYelExUkdoNk5sVjNNME5CT0dGQlMyNVZTbXBFTnpGNVNuSnFObTlCVERGaVZFMVZRUT09In19fQ==
 ---
 apiVersion: v1 
 kind: ConfigMap 
@@ -50,8 +50,8 @@ metadata:
   namespace: redbus
 spec::
   replicas: 2
-  strategy: 
-    updateType: RollingUpdate 
+  updateStrategy: 
+    type: RollingUpdate 
   serviceName: ssms-svc
   selector:
     matchLabels:
