@@ -15,12 +15,12 @@ pipeline {
         }
         stage('git leaks detect') {
             steps {
-                sh 'gitleaks detect --source . --report-format=table '
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.txt'
             }
         }
         stage('Dependency Scan') {
             steps {
-                sh 'trivy fs --format table .'
+                sh 'trivy fs --format table --output trivy-fs-report.txt .'
             }
         }
         stage('Installing Dependencies') {
@@ -43,9 +43,16 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'git-token') {
-                            sh 'docker build -t ghcr.io/venkaiahkuncham123/redbus:v1 .'
+                            sh 'docker build -t ghcr.io/venkaiahkuncham123/redbus:v1 -f Dockerfile.prod .'
                         }
+                }
+            }
+        }
+        stage('Trviy Image Scan') {
+            steps {
+                script {
+                    sh 'trivy image --format table --output image.txt ghcr.io/venkaiahkuncham123/redbus:v1'
+                        
                 }
             }
         }
