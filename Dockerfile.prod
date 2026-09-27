@@ -1,5 +1,4 @@
-ARG BASE_IMAGE=node:22-alpine
-FROM ${BASE_IMAGE}
+FROM node:22-alpine
 ARG DIR=/app
 WORKDIR ${DIR}
 COPY node_modules .
