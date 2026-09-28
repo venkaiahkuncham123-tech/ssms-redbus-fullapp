@@ -18,6 +18,7 @@ data:
   DB_NAME: "RedBusDB"
   DB_HOST: "ssms-svc"
   DB_PORT: "1433"
+  DB_USER: "sa"
 ---
 apiVersion: v1 
 kind: Secret 
@@ -25,8 +26,8 @@ metadata:
   name: db-secret
   namespace: redbus
 data:
-  MSSQL_SA_PASSWORD: cmVkYnVzMTIz
-  ADMIN_PASS: cmVkYnVzMTIz
+  MSSQL_SA_PASSWORD: VmVua3lAMjIxOTI3NzA0MDcxOTk5I1JlZEJ1c0FwcERldmVsb3A=
+  ADMIN_PASS: VmVua3lAMjIxOTI3NzA0MDcxOTk5I1JlZEJ1c0FwcERldmVsb3A=
   ADMIN_USER: YWRtaW4=
 type: Opaque
 ---
@@ -36,20 +37,20 @@ metadata:
   name: db-pvc
   namespace: redbus
 spec:
-  storageClassName: gp3 
+  storageClassName: gp3
   resources:
-    request:
+    requests:
       storage: 7Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
 ---
 apiVersion: apps/v1
-kind: StatfulSet
+kind: StatefulSet
 metadata:
   name: mssql-db
   namespace: redbus
-spec::
-  replicas: 2
+spec:
+  replicas: 1
   updateStrategy: 
     type: RollingUpdate 
   serviceName: ssms-svc
@@ -65,14 +66,8 @@ spec::
         - image: mcr.microsoft.com/mssql/server:2022-latest
           name: ssms
           ports:
-            - contianerPort: 1433
+            - containerPort: 1433
               name: ssms-port
-          readinessProbe:
-            tcpSocket:
-              port: 1433
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            failureThreshold: 3
           env:
             - name: MSSQL_SA_PASSWORD
               valueFrom:
@@ -89,20 +84,25 @@ spec::
                 configMapKeyRef:
                   name: db-config
                   key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                 configMapKeyRef:
+                    name: db-config
+                    key: DB_USER
           resources:
             requests:
               cpu: 300m
-              memory: 400Mi
+              memory: 6Gi
             limits:
               cpu: 350m
-              memory: 450Mi
+              memory: 7Gi
           volumeMounts:
             - name: pvc-volume
               mountPath: /external-data
       volumes:
         - name: pvc-volume
-          persistenVolumeClaim:
-            name: db-pvc
+          persistentVolumeClaim:
+            claimName: db-pvc
 ---
 apiVersion: v1 
 kind: Service 
@@ -140,7 +140,7 @@ spec:
         - name:  github-secret
       containers:
         - name: app
-          image: ghcr.io/venkaiahkuncham123/redbus:v1
+          image: ghcr.io/venkaiahkuncham123-tech/redbus:v3
           ports:
             - containerPort: 3000 
           imagePullPolicy: Always 
@@ -163,9 +163,9 @@ spec:
                   key: DB_NAME
             - name: DB_USER
               valueFrom:
-                secretKeyRef:
-                  name: db-secret
-                  key: ADMIN_USER
+                configMapKeyRef:
+                  name: db-config
+                  key: DB_USER
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -173,11 +173,11 @@ spec:
                   key: ADMIN_PASS
           resources:
             requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
               cpu: 200m
               memory: 300Mi
-            limits:
-              cpu: 300m
-              memory: 400Mi
           livenessProbe:
             httpGet:
               path: /travelers
@@ -221,7 +221,7 @@ spec:
     kind: Deployment 
     name: redbus-deploy
 ---
-appiVersion: v1 
+apiVersion: v1 
 kind: ResourceQuota 
 metadata: 
   namespace: redbus
@@ -237,7 +237,7 @@ spec:
     persistentvolumeclaims: 2
     count/networkpolicies.networking.k8s.io: 1
 ---
-apiVersion: networking.k8s.io/v1
+/* apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: redbus-netpol
@@ -251,7 +251,14 @@ spec:
         - podSelector:
             matchLabels:
               app: redbus
-        - podSelector:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: redbus
+          podSelector:
             matchLabels:
               app: front-end
-
+      ports:
+        - protocol: TCP
+          port: 1433
+    
+*/

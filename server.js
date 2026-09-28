@@ -17,8 +17,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 
 // Hardcoded demo admin credentials
-const ADMIN_USER = process.env.ADMIN_USER || "admin";
-const ADMIN_PASS = process.env.ADMIN_PASS || "redbus123";
+const ADMIN_USER = process.env.ADMIN_USER || "sa";
+const ADMIN_PASS = process.env.ADMIN_PASS || "Venky@221927704071999#RedBusAppDevelop";
 const ADMIN_SECRET_TOKEN = "redbus_admin_session_token_xyz890";
 
 const MIME = {
